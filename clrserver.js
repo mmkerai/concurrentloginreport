@@ -174,8 +174,14 @@ function getApiData(method, params, fcallback,cbparam) {
 		//the whole response has been received, take final action.
 		response.on('end', function () {
 			ApiDataNotReady--;
-			var jsonObj = JSON.parse(str);
-//			console.log("Response received: "+str);
+			var jsonObj;
+			try {
+				jsonObj = JSON.parse(str);
+			}
+			catch (e){
+				console.log("API or JSON error");
+				return;
+			}
 			var next = jsonObj.Next;
 			var data = new Array();
 			data = jsonObj.Data;
@@ -371,11 +377,11 @@ io.sockets.on('connection', function(socket)
 			ReportInProgress = true;
 			ThisSocketId = socket.id;
 			initialiseGlobals();
-			getApiData('getDepartments', 0, deptsCallback);
-			getApiData('getOperators', 0, operatorsCallback);
 			AID = data.aid;
 			SETTINGSID = data.settingsId;
 			KEY = data.apiKey;				
+			getApiData('getDepartments', 0, deptsCallback);
+			getApiData('getOperators', 0, operatorsCallback);
 			FromDate = new Date(data.fd);
 			ToDate = new Date(data.td);
 			socket.emit('errorResponse', "Getting login info from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
