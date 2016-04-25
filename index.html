@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Concurrent Login Report</title>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/clrindex.js"></script>
+</head>
+<body>
+<div class="container theme-showcase" role="main">
+	<div class="jumbotron">
+		<h2>Concurrent Login Report</h2>
+		<p class="lead">This report calculates Boldchat concurrent logins during the month every 10 minute intervals (based on UTC time)</p>
+	</div>
+	<form id="apiform">
+	<div class="form-horizontal col-xs-9">
+		<div class="form-group">
+			<label class="control-label col-xs-3" for="accountId">Account ID:</label>
+			<div class="col-xs-6">
+				<input class="form-control" type="text" name="accountId" id="accountId" value=""></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-xs-3" for="apiKeyId">API Setting ID:</label>
+			<div class="col-xs-6">
+				<input class="form-control" type="text" name="apiKeyId" id="apiKeyId" value=""></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-xs-3" for="apiKey">API Key:</label>
+			<div class="col-xs-6">
+				<input class="form-control" type="text" name="apiKey" id="apiKey" value=""></input>
+			</div>
+		</div>
+	</div>
+	</form>
+	<div class="form-horizontal col-xs-9">
+	<form id="loginreportform">
+		<div class="form-group">
+			<label class="control-label col-xs-3">Month:</label>
+			<div class="col-xs-3">
+				<select class="form-control" id='month'>
+				<option value="0">January</option> 
+				<option value="1" selected>February</option> 
+				<option value="2">March</option> 
+				<option value="3">April</option> 
+				<option value="4">May</option> 
+				<option value="5">June</option> 
+				<option value="6">July</option> 
+				<option value="7">August</option> 
+				<option value="8">September</option> 
+				<option value="9">October</option> 
+				<option value="10">November</option> 
+				<option value="11">December</option> 
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-xs-3">Year:</label>
+			<div class="col-xs-3">
+				<select class="form-control" id='year'>
+				<option value="2015">2015</option> 
+				<option value="2016" selected>2016</option> 
+				<option value="2017">2017</option> 
+				<option value="2018">2018</option> 
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-xs-9 col-xs-offset-3">
+				<input class="btn btn-primary" type="submit" value="Get Login Information"/>
+			</div>
+		</div>
+	</form>
+	</div>
+	<div class="container">
+		<p class="text-center" id="error"></p>
+		<p class="text-center" id="message"></p>
+		<p class="text-center" id="result"></p>
+		<p class="text-center"><a class="btn btn-info" download="logins.csv" id="downloadbutton" href=""></a></p>
+	</div>
+</div>
+</body>
+</html>
