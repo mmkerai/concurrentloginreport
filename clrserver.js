@@ -21,7 +21,7 @@ server.listen(PORT);
 app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
 });
-app.get('/cloginreport.js', function(req, res){
+app.get('/clrindex.js', function(req, res){
 	res.sendFile(__dirname + '/clrindex.js');
 });
 app.get('/favicon.ico', function(req, res){
