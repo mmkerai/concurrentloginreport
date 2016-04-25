@@ -113,7 +113,7 @@ function deptOperatorsCallback(dlist, dept) {
 	}
 	
 	DeptOperators[dept] = doperators;
-	console.log("Operators in dept: "+Departments[dept].dname+" - "+DeptOperators[dept].length);
+//	console.log("Operators in dept: "+Departments[dept].dname+" - "+DeptOperators[dept].length);
 }
 
 // set up operator depts from department operators for easier indexing
