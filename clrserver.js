@@ -104,7 +104,6 @@ function deptsCallback(dlist) {
 	{
 		parameters = "DepartmentID="+did;
 		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
-		console.log("No. of departments: "+count++);
 		sleep(50);
 	}
 }
