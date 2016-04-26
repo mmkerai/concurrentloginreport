@@ -90,6 +90,43 @@ function sleep(milliseconds) {
   }
 }
 
+function deptsCallback(dlist) {
+	var dname, newname, sg,ch1,ch2;
+	for(var i in dlist) 
+	{
+		dname = dlist[i].Name;
+		Departments[dlist[i].DepartmentID] = new Plogindata(dname);
+	}
+	console.log("No of Depts: "+Object.keys(Departments).length);
+	io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+Object.keys(Departments).length);
+	var parameters;
+	for(var did in Departments)
+	{
+		parameters = "DepartmentID="+did;
+		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
+		sleep(50);
+	}
+}
+
+function operatorsCallback(dlist) {
+	for(var i in dlist) 
+	{
+		Operators[dlist[i].LoginID] = dlist[i].Name;
+	}
+	console.log("No of Operators: "+Object.keys(Operators).length);
+}
+
+function deptOperatorsCallback(dlist, dept) {
+	var doperators = new Array();
+	for(var i in dlist) 
+	{
+		doperators.push(dlist[i].LoginID);
+	}
+	
+	DeptOperators[dept] = doperators;
+//	console.log("Operators in dept: "+Departments[dept].dname+" - "+DeptOperators[dept].length);
+}
+
 // set up operator depts from department operators for easier indexing
 function getLoginActivity() {
 	var ops, depts;
@@ -100,6 +137,22 @@ function getLoginActivity() {
 		return;
 	}
 
+	for(var did in Departments)
+	{
+		ops = new Array();
+		ops = DeptOperators[did];
+		for(var k in ops)
+		{
+			depts = OperatorDepts[ops[k]];
+			if(typeof(depts) === 'undefined')
+				depts = new Array();
+
+			depts.push(did);	// add dept to list of operators
+			OperatorDepts[ops[k]] = depts;		
+		}
+	}
+	console.log("Operator depts size: "+Object.keys(OperatorDepts).length);
+	
 	var prestart = new Date(FromDate);
 	var day = prestart.getDate();
 	day = day - 2;			// collect login activity 2 days before start in case person logged in
@@ -228,6 +281,21 @@ function calculateConcLogins() {
 			if((OpLogins[opid])[count] == 1)
 			{
 				Overall.peaks[count]++;
+				
+				if(typeof(Operators[opid]) === 'undefined')		// operator must be deleted
+				{
+					DeletedOperators++;
+					continue;
+				}
+			
+				var depts = new Array();
+				depts = OperatorDepts[opid];
+				var dd = new Object();
+				for(var i in depts)
+				{
+					if(typeof(Departments[depts[i]]) !== 'undefined')		// in case the dept has been deleted
+						Departments[depts[i]].peaks[count]++;
+				}
 			}
 		}
 	}
@@ -244,6 +312,14 @@ function calculatePeakLogins() {
 			Overall.peaktime = count;
 		}
 		
+		for(var i in Departments)
+		{
+			if(Departments[i].peaklogins < Departments[i].peaks[count])
+			{
+				Departments[i].peaklogins = Departments[i].peaks[count];
+				Departments[i].peaktime = count;
+			}		
+		}		
 	}
 	
 	day = Math.floor((Overall.peaktime *10)/ (24*60)) + 1;
@@ -264,6 +340,9 @@ function convertToCsv() {
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
 	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
 	csvtext = csvtext + "Date,Time,Overall";
+	for(i in Departments)
+		csvtext = csvtext +","+Departments[i].dname;
+	
 	csvtext = csvtext +"\r\n";
 	var startmilli = time.getTime();
 	
@@ -272,15 +351,23 @@ function convertToCsv() {
 		time = new Date(startmilli + i*10*60*1000);	// convert index time to milliseconds from start
 		dt = time.toISOString().slice(0,19).replace(/T/g,",");
 		csvtext = csvtext + dt +","+Overall.peaks[i];
+		for(var j in Departments)
+			csvtext = csvtext +","+Departments[j].peaks[i];		
+		
 		csvtext = csvtext +"\r\n";
 	}
 	io.sockets.connected[ThisSocketId].emit('doneResponse', csvtext);					
 }
 
 function initialiseGlobals() {
+	Departments = new Object();	// array of dept ids and dept name objects
+	Operators = new Object();	// array of operator ids and name objects
+	DeptOperators = new Object();	// array of operators by dept id
+	OperatorDepts = new Object();	// array of depts for each operator
 	OpLogins = new Object();
 	ApiDataNotReady = 0;
 	TotalLogins = 0;
+	DeletedOperators = 0;
 	Overall = new Plogindata("Overall");
 	FromDate = 0;
 	ToDate = 0;
@@ -290,7 +377,6 @@ function initialiseGlobals() {
 // Set up callbacks
 io.sockets.on('connection', function(socket)
 {
-	socket.heartbeatTimeout = 120000;
 	//  Get all reports and returned data
 	socket.on('getLoginReport', function(data)
 	{	
@@ -306,6 +392,8 @@ io.sockets.on('connection', function(socket)
 			AID = data.aid;
 			SETTINGSID = data.settingsId;
 			KEY = data.apiKey;				
+			getApiData('getDepartments', 0, deptsCallback);
+			getApiData('getOperators', 0, operatorsCallback);
 			FromDate = new Date(data.fd);
 			ToDate = new Date(data.td);
 			socket.emit('errorResponse', "Getting login info from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
@@ -325,6 +413,7 @@ function waitForLoginData() {
 	console.log("Calculating peak logins");
 	calculateConcLogins();
 	calculatePeakLogins();
+	console.log("Deleted Operators is "+DeletedOperators);
 	console.log("Prestart ignored is "+PreStartIgnored);
 	
 	io.sockets.connected[ThisSocketId].emit('loginsResponse', Overall);					
