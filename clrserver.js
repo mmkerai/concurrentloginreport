@@ -98,13 +98,12 @@ function deptsCallback(dlist) {
 		Departments[dlist[i].DepartmentID] = new Plogindata(dname);
 	}
 	console.log("No of Depts: "+Object.keys(Departments).length);
+	io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+Object.keys(Departments).length);
 	var parameters;
-	var count = 1;
 	for(var did in Departments)
 	{
 		parameters = "DepartmentID="+did;
 		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
-		io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+count++);
 		console.log("No. of departments: "+count++);
 		sleep(50);
 	}
@@ -172,6 +171,7 @@ function loadNext(method, next, callback) {
 			str.push(encodeURIComponent(key) + "=" + encodeURIComponent(next[key]));
 		}
 	}
+	sleep(50);		// to avoid too many requests at the same time which gives an API error
 	getApiData(method, str.join("&"), callback);
 }
 
