@@ -103,7 +103,7 @@ function deptsCallback(dlist) {
 	{
 		parameters = "DepartmentID="+did;
 		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
-		sleep(200);
+		sleep(50);
 	}
 }
 
@@ -129,6 +129,7 @@ function deptOperatorsCallback(dlist, dept) {
 // set up operator depts from department operators for easier indexing
 function getLoginActivity() {
 	var ops, depts;
+	io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+Object.keys(Departments).length);	
 	if(ApiDataNotReady > 0)
 	{
 		console.log("Waiting for static data: "+ApiDataNotReady);
