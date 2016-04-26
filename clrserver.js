@@ -104,7 +104,8 @@ function deptsCallback(dlist) {
 	{
 		parameters = "DepartmentID="+did;
 		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
-		io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+count++);	
+		io.sockets.connected[ThisSocketId].emit('messageResponse', "No. of departments: "+count++);
+		console.log("No. of departments: "+count++);
 		sleep(50);
 	}
 }
