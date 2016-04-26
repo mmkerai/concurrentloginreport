@@ -81,6 +81,15 @@ function BC_API_Request(api_method,params,callBackFunction) {
 	https.request(options, callBackFunction).end();
 }
 
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for(var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
 function deptsCallback(dlist) {
 	var dname, newname, sg,ch1,ch2;
 	for(var i in dlist) 
@@ -94,6 +103,7 @@ function deptsCallback(dlist) {
 	{
 		parameters = "DepartmentID="+did;
 		getApiData("getDepartmentOperators",parameters,deptOperatorsCallback,did);	// extra func param due to API
+		sleep(200);
 	}
 }
 
