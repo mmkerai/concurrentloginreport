@@ -301,7 +301,7 @@ io.sockets.on('connection', function(socket)
 		{
 			if(typeof data.ci !== 'undefined')
 			{
-				if(data.ci != 10 || data.ci != 15)	// concurrency interval
+				if(data.ci != "10" || data.ci != "15")	// concurrency interval
 				{
 					socket.emit('errorResponse', "Concurrency interval must be 10 or 15 minutes");
 					return;
