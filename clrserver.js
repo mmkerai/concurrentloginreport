@@ -299,7 +299,7 @@ io.sockets.on('connection', function(socket)
 		}
 		else
 		{
-			if(typeof data.ci !== undefined)
+			if(typeof data.ci !== 'undefined')
 			{
 				if(data.ci != 10 || data.ci != 15)	// concurrency interval
 				{
