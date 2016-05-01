@@ -50,6 +50,7 @@ var totalLogins;
 var FromDate;
 var ToDate;
 var MAXINTS = 4464;	// 6 per hour * 24hrs * 31days
+var CInterval;		// login concurrency interval i.e. 10 or 15 min intervals
 var DeletedOperators;
 var LoggedInUsers = new Object();
 var MonthIndex = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -65,9 +66,7 @@ var Plogindata = function(name) {
 };
 
 // Set up code for outbound BoldChat API calls.  All of the capture callback code should ideally be packaged as an object.
-var fs = require('fs');
 eval(fs.readFileSync('hmac-sha512.js')+'');
-var https = require('https');
 
 function BC_API_Request(api_method,params,callBackFunction) {
 	var auth = AID + ':' + SETTINGSID + ':' + (new Date()).getTime();
@@ -138,7 +137,7 @@ function getApiData(method, params, fcallback,cbparam) {
 				jsonObj = JSON.parse(str);
 			}
 			catch (e){
-				console.log("API or JSON error");
+				console.log("API or JSON message error");
 				return;
 			}
 			var next = jsonObj.Next;
@@ -211,9 +210,9 @@ function saveLoginInfo(opid, starttime, endtime) {
 	// date starts at 1 but array starts from 0 so make adjustment
 	sd = sd - 1;
 	ed = ed - 1;
-	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/10);		// 31 days * 24 hours * 60 min
-	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/10);		// every 10 mins
-//	console.log("Logged in time (10 mins) "+sindex+" ,"+(eindex-sindex));
+	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/CInterval);		// 31 days * 24 hours * 60 min
+	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10 mins
+//	console.log("Logged in time "+sindex+" ,"+(eindex-sindex));
 	for(count=sindex; count <= eindex; count++)
 		(OpLogins[opid])[count] = 1;		// set operator logged in at this time to true
 }
@@ -246,11 +245,11 @@ function calculatePeakLogins() {
 		
 	}
 	
-	day = Math.floor((Overall.peaktime *10)/ (24*60)) + 1;
-	partday = (Overall.peaktime*10) % (24*60);
+	day = Math.floor((Overall.peaktime *CInterval)/ (24*60)) + 1;
+	partday = (Overall.peaktime*CInterval) % (24*60);
 	hours = Math.floor(partday/ 60);
 	mins = partday % 60;
-	console.log("Peak value by 10 minute is "+Overall.peaklogins+" at "+Overall.peaktime+"<br/>");
+	console.log("Peak value by interval is "+Overall.peaklogins+" at "+Overall.peaktime+"<br/>");
 	console.log("datetime is "+day+" day, "+hours+" hours, "+mins+" mins<br/>");
 }
 
@@ -260,7 +259,7 @@ function convertToCsv() {
 	var csvtext = "";
 	var dt,i;
 	var time = new Date(FromDate);
-	var pt = new Date(time.getTime() +(Overall.peaktime*10*60*1000));
+	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
 	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
 	csvtext = csvtext + "Date,Time,Overall";
@@ -269,7 +268,7 @@ function convertToCsv() {
 	
 	for(var i=0; i < MAXINTS; i++)
 	{
-		time = new Date(startmilli + i*10*60*1000);	// convert index time to milliseconds from start
+		time = new Date(startmilli + i*CInterval*60*1000);	// convert index time to milliseconds from start
 		dt = time.toISOString().slice(0,19).replace(/T/g,",");
 		csvtext = csvtext + dt +","+Overall.peaks[i];
 		csvtext = csvtext +"\r\n";
@@ -300,6 +299,18 @@ io.sockets.on('connection', function(socket)
 		}
 		else
 		{
+			if(typeof data.ci !== undefined)
+			{
+				if(data.ci != 10 || data.ci != 15)	// concurrency interval
+				{
+					socket.emit('errorResponse', "Concurrency interval must be 10 or 15 minutes");
+					return;
+				}
+				CInterval = Number(data.ci);
+			}
+			else
+				CInterval = Number(10);		// default is every 10 minutes
+			
 			ReportInProgress = true;
 			ThisSocketId = socket.id;
 			initialiseGlobals();
@@ -308,7 +319,7 @@ io.sockets.on('connection', function(socket)
 			KEY = data.apiKey;				
 			FromDate = new Date(data.fd);
 			ToDate = new Date(data.td);
-			socket.emit('errorResponse', "Getting login info from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
+			socket.emit('errorResponse', "Calculating concurrent logins based on "+CInterval+" min intervals from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
 			getLoginActivity();		// login activity for time period
 		}
 	});
