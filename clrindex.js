@@ -87,6 +87,7 @@ $(document).ready(function() {
 		var keyId = $('#apiKey').val();
 		var month = $('#month').val();
 		var year = $('#year').val();
+		var cint = $('#interval').val();
 
 		startdate = new Date();
 		startdate.setYear(year);
@@ -100,7 +101,7 @@ $(document).ready(function() {
 		enddate.setUTCHours(0,0,0,0);
 		enddate = new Date(enddate.getTime() - 1);
 		console.log("Start and end date: "+startdate.toDateString()+" , "+enddate.toDateString());
-		var loginobj = {aid: accId, settingsId: apiId, apiKey: keyId, fd: startdate.toISOString(), td: enddate.toISOString()};
+		var loginobj = {aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
 		socket.emit('getLoginReport', loginobj);
 	});
 	
