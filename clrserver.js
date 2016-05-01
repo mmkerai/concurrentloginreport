@@ -301,13 +301,12 @@ io.sockets.on('connection', function(socket)
 		{
 			if(typeof data.ci !== 'undefined')
 			{
-				console.log("CI is "+data.ci);
-				if(data.ci != "10" || data.ci != "15")	// concurrency interval
+				CInterval = Number(data.ci);
+				if(CInterval !== 10 || CInterval !== 15)	// concurrency interval
 				{
 					socket.emit('errorResponse', "Concurrency interval must be 10 or 15 minutes");
 					return;
 				}
-				CInterval = Number(data.ci);
 			}
 			else
 				CInterval = Number(10);		// default is every 10 minutes
