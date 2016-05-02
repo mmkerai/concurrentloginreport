@@ -49,7 +49,7 @@ var Overall;
 var totalLogins;
 var FromDate;
 var ToDate;
-var MAXINTS = 4464;	// 6 per hour * 24hrs * 31days
+var MaxInts;	// 10 or 15 min intervals in a month
 var CInterval;		// login concurrency interval i.e. 10 or 15 min intervals
 var DeletedOperators;
 var LoggedInUsers = new Object();
@@ -60,7 +60,7 @@ var ReportInProgress = false;
 
 var Plogindata = function(name) {
 		this.dname = name;
-		this.peaks = new Array(MAXINTS).fill(0);	// array of times when users are logged in
+		this.peaks = new Array(MaxInts).fill(0);	// array of times when users are logged in
 		this.peaklogins = 0;	// peak logins based on peaks array
 		this.peaktime = 0;		// time of peak login
 };
@@ -188,7 +188,7 @@ function loginsCallback(dlist) {
 			
 		if(typeof(OpLogins[dlist[i].OperatorID]) === 'undefined')
 		{
-			OpLogins[dlist[i].OperatorID] = new Array(MAXINTS).fill(0);	// array of times when user is logged in
+			OpLogins[dlist[i].OperatorID] = new Array(MaxInts).fill(0);	// array of times when user is logged in
 		}
 		saveLoginInfo(dlist[i].OperatorID, created, ended);		
 	}
@@ -211,7 +211,7 @@ function saveLoginInfo(opid, starttime, endtime) {
 	sd = sd - 1;
 	ed = ed - 1;
 	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/CInterval);		// 31 days * 24 hours * 60 min
-	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10 mins
+	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10 or 15 mins
 //	console.log("Logged in time "+sindex+" ,"+(eindex-sindex));
 	for(count=sindex; count <= eindex; count++)
 		(OpLogins[opid])[count] = 1;		// set operator logged in at this time to true
@@ -222,7 +222,7 @@ function calculateConcLogins() {
 	
 	for(var opid in OpLogins)
 	{
-		for(count=0; count < MAXINTS; count++)
+		for(count=0; count < MaxInts; count++)
 		{
 			if((OpLogins[opid])[count] == 1)
 			{
@@ -232,10 +232,10 @@ function calculateConcLogins() {
 	}
 }
 
-// calculate peak logins by checking everybody logged in each 10 minutes of the day 
+// calculate peak logins by checking everybody logged in each minutes interval of the day 
 function calculatePeakLogins() {
 	var count, day, partday, hours, mins;
-	for(count=0; count < MAXINTS; count++)
+	for(count=0; count < MaxInts; count++)
 	{
 		if(Overall.peaklogins < Overall.peaks[count])
 		{
@@ -266,7 +266,7 @@ function convertToCsv() {
 	csvtext = csvtext +"\r\n";
 	var startmilli = time.getTime();
 	
-	for(var i=0; i < MAXINTS; i++)
+	for(var i=0; i < MaxInts; i++)
 	{
 		time = new Date(startmilli + i*CInterval*60*1000);	// convert index time to milliseconds from start
 		dt = time.toISOString().slice(0,19).replace(/T/g,",");
@@ -278,6 +278,7 @@ function convertToCsv() {
 
 function initialiseGlobals() {
 	OpLogins = new Object();
+	MaxInts = 31*24*(60/CInterval);		// max intervals in a month 31 days * 24 hours * 4 or 6 per hour
 	ApiDataNotReady = 0;
 	TotalLogins = 0;
 	Overall = new Plogindata("Overall");
