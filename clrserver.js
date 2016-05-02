@@ -312,6 +312,7 @@ io.sockets.on('connection', function(socket)
 			else
 				CInterval = Number(10);		// default is every 10 minutes
 			
+			CInterval = 30;
 			ReportInProgress = true;
 			ThisSocketId = socket.id;
 			initialiseGlobals();
