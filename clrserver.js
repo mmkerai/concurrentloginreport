@@ -316,7 +316,7 @@ io.sockets.on('connection', function(socket)
 			AID = data.aid || 0;
 			SETTINGSID = data.settingsId || 0;
 			KEY = data.apiKey || 0;
-			if(AID == 0 || SETTINGSID = 0 || KEY = 0)
+			if(AID == 0 || SETTINGSID == 0 || KEY == 0)
 			{
 				socket.emit('errorResponse', "Credentials not complete");
 				return;
