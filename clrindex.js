@@ -2,8 +2,7 @@
 var socket = new io.connect('https://bcloginreport.herokuapp.com', {
     'reconnection': true,
     'reconnectionDelay': 1000,
-    'reconnectionDelayMax' : 500,
-    'reconnectionAttempts': 5
+    'reconnectionAttempts': 50
 });
 
 function toHHMMSS(seconds) {
@@ -111,13 +110,13 @@ $(document).ready(function() {
 		socket.emit('getLoginReport', loginobj);
 	});
 	
-	socket.on('connection', function(socket){
+/*	socket.on('connection', function(socket){
 		console.log("Socket connected");
 		socket.on('disconnect', function(){
 			console.log("connection disconnect");
 			socket.socket.reconnectionDelay /= 2;
 		});	
-    });
+    }); */
 	socket.on('errorResponse', function(data){
 		$("#error").text(data);
 	});
@@ -151,8 +150,14 @@ $(document).ready(function() {
 		$('#downloadbutton').show(300);
 	});
 
-	socket.on('end', function(data){
-		console.log("connection ended");
+	socket.on('connect_timeout', function(data){
+		console.log("connection timeout");
+	});
+	socket.on('ping', function(data){
+		console.log("connection ping");
+	});
+	socket.on('pong', function(data){
+		console.log("connection pong");
 	});
 });
 
