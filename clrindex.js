@@ -1,4 +1,10 @@
-var socket = io.connect();
+//var socket = io.connect();
+var socket = new io.connect('http://bcloginreport.herokuapp.com', {
+    'reconnection': true,
+    'reconnectionDelay': 1000,
+    'reconnectionDelayMax' : 5000,
+    'reconnectionAttempts': 5
+});
 
 function toHHMMSS(seconds) {
     var sec_num = parseInt(seconds, 10); // don't forget the second param
