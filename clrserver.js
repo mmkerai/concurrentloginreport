@@ -312,15 +312,20 @@ io.sockets.on('connection', function(socket)
 			else
 				CInterval = Number(15);		// default is every 15 minutes
 			
-			ReportInProgress = true;
-			ThisSocketId = socket.id;
 			initialiseGlobals();
-			AID = data.aid;
-			SETTINGSID = data.settingsId;
-			KEY = data.apiKey;				
+			AID = data.aid || 0;
+			SETTINGSID = data.settingsId || 0;
+			KEY = data.apiKey || 0;
+			if(AID == 0 || SETTINGSID = 0 || KEY = 0)
+			{
+				socket.emit('errorResponse', "Credentials not complete");
+				return;
+			}
 			FromDate = new Date(data.fd);
 			ToDate = new Date(data.td);
 			socket.emit('errorResponse', "Calculating concurrent logins based on "+CInterval+" min intervals from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
+			ReportInProgress = true;
+			ThisSocketId = socket.id;
 			getLoginActivity();		// login activity for time period
 		}
 	});

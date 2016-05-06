@@ -107,7 +107,11 @@ $(document).ready(function() {
 	
 	socket.on('connection', function(socket){
 		console.log("Socket connected");
-	});
+		socket.on('disconnect', function(){
+			console.log("connection disconnect");
+			socket.socket.reconnectionDelay /= 2;
+		});	
+    });
 	socket.on('errorResponse', function(data){
 		$("#error").text(data);
 	});
@@ -141,10 +145,6 @@ $(document).ready(function() {
 		$('#downloadbutton').show(300);
 	});
 
-	socket.on('disconnect', function(data){
-		console.log("connection disconnect");
-	});
-	
 	socket.on('end', function(data){
 		console.log("connection ended");
 	});
