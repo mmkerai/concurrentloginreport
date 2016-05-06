@@ -288,9 +288,7 @@ function initialiseGlobals() {
 }
 
 // Set up callbacks
-io.sockets.on('connection', function(socket)
-{
-	socket.pingTimeout = 120000;
+io.sockets.on('connection', function(socket) {
 	//  Get all reports and returned data
 	socket.on('getLoginReport', function(data)
 	{	
@@ -331,11 +329,11 @@ io.sockets.on('connection', function(socket)
 	});
 	
 	socket.on('disconnect', function(data){
-		console.log("connection disconnect");
+		console.log("socket disconnect");
 	});
 	
 	socket.on('end', function(data){
-		console.log("connection ended");
+		console.log("socket ended");
 	});
 
 });

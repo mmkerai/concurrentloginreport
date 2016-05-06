@@ -1,4 +1,3 @@
-//var socket = io.connect();
 var socket = new io.connect('https://bcloginreport.herokuapp.com', {
     'reconnection': true,
     'reconnectionDelay': 1000,
@@ -110,13 +109,9 @@ $(document).ready(function() {
 		socket.emit('getLoginReport', loginobj);
 	});
 	
-/*	socket.on('connection', function(socket){
+	socket.on('connection', function(data){
 		console.log("Socket connected");
-		socket.on('disconnect', function(){
-			console.log("connection disconnect");
-			socket.socket.reconnectionDelay /= 2;
-		});	
-    }); */
+    });
 	socket.on('errorResponse', function(data){
 		$("#error").text(data);
 	});
@@ -154,10 +149,10 @@ $(document).ready(function() {
 		console.log("connection timeout");
 	});
 	socket.on('ping', function(data){
-		console.log("connection ping");
+//		console.log("connection ping");
 	});
 	socket.on('pong', function(data){
-		console.log("connection pong");
+//		console.log("connection pong");
 	});
 });
 
