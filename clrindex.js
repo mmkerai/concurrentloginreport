@@ -1,4 +1,4 @@
-var socket = io.connect();
+//var socket = io.connect();
 
 function toHHMMSS(seconds) {
     var sec_num = parseInt(seconds, 10); // don't forget the second param
@@ -104,7 +104,10 @@ $(document).ready(function() {
 		var loginobj = {aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
 		socket.emit('getLoginReport', loginobj);
 	});
+});
 	
+io.sockets.on('connection', function(socket){
+
 	socket.on('errorResponse', function(data){
 		$("#error").text(data);
 	});
@@ -138,6 +141,13 @@ $(document).ready(function() {
 		$('#downloadbutton').show(300);
 	});
 
+	socket.on('disconnect', function(data){
+		console.log("connection disconnect");
+	});
+	
+	socket.on('end', function(data){
+		console.log("connection ended");
+	});
 });
 
 

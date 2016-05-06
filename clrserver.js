@@ -290,7 +290,7 @@ function initialiseGlobals() {
 // Set up callbacks
 io.sockets.on('connection', function(socket)
 {
-	socket.heartbeatTimeout = 120000;
+	socket.pingTimeout = 120000;
 	//  Get all reports and returned data
 	socket.on('getLoginReport', function(data)
 	{	
@@ -324,6 +324,15 @@ io.sockets.on('connection', function(socket)
 			getLoginActivity();		// login activity for time period
 		}
 	});
+	
+	socket.on('disconnect', function(data){
+		console.log("connection disconnect");
+	});
+	
+	socket.on('end', function(data){
+		console.log("connection ended");
+	});
+
 });
 
 function waitForLoginData() {
