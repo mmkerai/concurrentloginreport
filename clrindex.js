@@ -2,7 +2,7 @@
 var socket = new io.connect('https://bcloginreport.herokuapp.com', {
     'reconnection': true,
     'reconnectionDelay': 1000,
-    'reconnectionDelayMax' : 5000,
+    'reconnectionDelayMax' : 500,
     'reconnectionAttempts': 5
 });
 
