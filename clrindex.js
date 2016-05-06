@@ -1,5 +1,5 @@
 //var socket = io.connect();
-var socket = new io.connect('http://bcloginreport.herokuapp.com', {
+var socket = new io.connect('https://bcloginreport.herokuapp.com', {
     'reconnection': true,
     'reconnectionDelay': 1000,
     'reconnectionDelayMax' : 5000,
