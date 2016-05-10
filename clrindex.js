@@ -122,7 +122,7 @@ $(document).ready(function() {
 		console.log("User Data received "+Object.keys(data).length);
 	});
 	socket.on('loginsResponse', function(data){
-		var pdatetime = new Date(startdate.getTime() +(data.peaktime*10*60*1000));	// convert index to time
+		var pdatetime = new Date(startdate.getTime() +(data.peaktime*Number(CInterval)*60*1000));	// convert index to time
 		console.log("Peak Login Data received "+data.peaklogins+" at "+pdatetime.toISOString());
 		var str = "";
 	
