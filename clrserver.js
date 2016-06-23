@@ -4,9 +4,8 @@
 var http = require('http');
 var https = require('https');
 var app = require('express')();
-var	server = http.createServer(app);
-var	io = require('socket.io').listen(server);
 var fs = require('fs');
+var crypto = require('crypto');
 var bodyParser = require('body-parser');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -15,7 +14,9 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 //********** Get port used by Heroku or use a default
 var PORT = Number(process.env.PORT || 3000);
-server.listen(PORT);
+//var server = https.createServer(options, app).listen(PORT);
+var server = http.createServer(app).listen(PORT);
+var	io = require('socket.io').listen(server);
 
 //****** Callbacks for all URL requests
 app.get('/', function(req, res){
@@ -66,11 +67,9 @@ var Plogindata = function(name) {
 };
 
 // Set up code for outbound BoldChat API calls.  All of the capture callback code should ideally be packaged as an object.
-eval(fs.readFileSync('hmac-sha512.js')+'');
-
 function BC_API_Request(api_method,params,callBackFunction) {
 	var auth = AID + ':' + SETTINGSID + ':' + (new Date()).getTime();
-	var authHash = auth + ':' + CryptoJS.SHA512(auth + KEY).toString(CryptoJS.enc.Hex);
+	var authHash = auth + ':' + crypto.createHash('sha512').update(auth + KEY).digest('hex');
 	var options = {
 		host : 'api.boldchat.com', 
 		port : 443, 
