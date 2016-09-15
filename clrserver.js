@@ -283,7 +283,7 @@ function convertToCsv() {
 	}
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
-	var date = dt.slice(3,12);
+	var date = dt.slice(0,8);
 	console.log("Date is "+date);
 	var day;
 	for(var i=0; i < 31; i++)
