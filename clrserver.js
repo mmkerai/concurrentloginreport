@@ -261,7 +261,7 @@ function calculatePeakLogins() {
 function convertToCsv() {		
 	var csvtext = "";
 	var csvbyday = "";
-	var dt,i;
+	var dt;
 	var time = new Date(FromDate);
 	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
@@ -284,11 +284,13 @@ function convertToCsv() {
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
 	var date = dt.slice(3,12);
+	console.log("Date is "+date);
 	var day;
 	for(var i=0; i < 31; i++)
 	{
-		day = Number(i) + 1;	// add one as array starts from 0
+		day = Number(i) + Number(1);	// add one as array starts from 0
 		dt = day + date;
+		console.log("dt is "+dt);
 		csvbyday = csvbyday +dt+","+Overall.peaksbyday[i];
 		csvbyday = csvbyday +"\r\n";
 	}
