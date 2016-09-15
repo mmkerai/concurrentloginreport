@@ -284,13 +284,11 @@ function convertToCsv() {
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
 	var date = dt.slice(0,8);
-	console.log("Date is "+date);
 	var day;
 	for(var i=0; i < 31; i++)
 	{
 		day = Number(i) + Number(1);	// add one as array starts from 0
-		dt = day + date;
-		console.log("dt is "+dt);
+		dt = date + day;
 		csvbyday = csvbyday +dt+","+Overall.peaksbyday[i];
 		csvbyday = csvbyday +"\r\n";
 	}
