@@ -267,9 +267,9 @@ function convertToCsv() {
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
 	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
 	csvbyday = csvtext;		// use same header for both files
-	csvtext = csvtext + "Date,Time,Logins";
+	csvtext = csvtext + "Date,Time,Peak Logins";
 	csvtext = csvtext +"\r\n";
-	csvbyday = csvtext + "Date,Logins";
+	csvbyday = csvbyday + "Date,Peak Logins";
 	csvbyday = csvbyday +"\r\n";
 	
 	var startmilli = time.getTime();
@@ -283,10 +283,12 @@ function convertToCsv() {
 	}
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
-	var date = dt.slice(3,8);
+	var date = dt.slice(3,12);
+	var day;
 	for(var i=0; i < 31; i++)
 	{
-		dt = i + date;
+		day = Number(i) + 1;	// add one as array starts from 0
+		dt = day + date;
 		csvbyday = csvbyday +dt+","+Overall.peaksbyday[i];
 		csvbyday = csvbyday +"\r\n";
 	}

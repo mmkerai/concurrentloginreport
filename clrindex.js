@@ -143,7 +143,6 @@ $(document).ready(function() {
 		}
 		csvfile1 = window.URL.createObjectURL(filedata1);
 		$('#loginsbyint').attr('href', csvfile1);
-		$('#loginsbyint').html("Download file");
 		$('#loginsbyint').show(200);
 	});
 
@@ -158,7 +157,6 @@ $(document).ready(function() {
 		}
 		csvfile2 = window.URL.createObjectURL(filedata2);
 		$('#loginsbyday').attr('href', csvfile2);
-		$('#loginsbyday').html("Download file");
 		$('#loginsbyday').show(400);
 	});
 
