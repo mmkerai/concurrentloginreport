@@ -74,11 +74,13 @@ function initialiseValues() {
 	$('#error').text("");
 	$('#message').text("");
 	$('#result').text("");
-	$('#downloadbutton').hide();
+	$('#loginsbyint').hide();
+	$('#loginsbyday').hide();
 }
 
 $(document).ready(function() {
-	var csvfile = null;
+	var csvfile1 = null;
+	var csvfile2 = null;
 	var enddate, startdate;
 	
 	initialiseValues();
@@ -130,19 +132,34 @@ $(document).ready(function() {
 		$("#result").html(str);
 	});
 	
-	socket.on('doneResponse', function(data){
-		$("#done").text("Creating csv file");
-		var filedata = new Blob([data], {type: 'text/plain'});
+	socket.on('rep1DoneResponse', function(data){
+		$("#done").text("Creating csv files");
+		var filedata1 = new Blob([data], {type: 'text/plain'});
 		// If we are replacing a previously generated file we need to
 		// manually revoke the object URL to avoid memory leaks.
-		if (csvfile !== null)
+		if (csvfile1 !== null)
 		{
-			window.URL.revokeObjectURL(csvfile);
+			window.URL.revokeObjectURL(csvfile1);
 		}
-		csvfile = window.URL.createObjectURL(filedata);
-		$('#downloadbutton').attr('href', csvfile);
-		$('#downloadbutton').html("Download file");
-		$('#downloadbutton').show(300);
+		csvfile1 = window.URL.createObjectURL(filedata1);
+		$('#loginsbyint').attr('href', csvfile1);
+		$('#loginsbyint').html("Download file");
+		$('#loginsbyint').show(200);
+	});
+
+	socket.on('rep2DoneResponse', function(data){
+		$("#done").text("Creating csv files");
+		var filedata2 = new Blob([data], {type: 'text/plain'});
+		// If we are replacing a previously generated file we need to
+		// manually revoke the object URL to avoid memory leaks.
+		if (csvfile2 !== null)
+		{
+			window.URL.revokeObjectURL(csvfile2);
+		}
+		csvfile2 = window.URL.createObjectURL(filedata2);
+		$('#loginsbyday').attr('href', csvfile2);
+		$('#loginsbyday').html("Download file");
+		$('#loginsbyday').show(400);
 	});
 
 	socket.on('connect_timeout', function(data){

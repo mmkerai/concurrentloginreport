@@ -64,6 +64,7 @@ var Plogindata = function(name) {
 		this.peaks = new Array(MaxInts).fill(0);	// array of times when users are logged in
 		this.peaklogins = 0;	// peak logins based on peaks array
 		this.peaktime = 0;		// time of peak login
+		this.peaksbyday = new Array(31).fill(0);	// array of peak login per day
 };
 
 // Set up code for outbound BoldChat API calls.  All of the capture callback code should ideally be packaged as an object.
@@ -241,7 +242,11 @@ function calculatePeakLogins() {
 			Overall.peaklogins = Overall.peaks[count];
 			Overall.peaktime = count;
 		}
-		
+		day = Math.floor((count*CInterval)/ (24*60)) + 1;
+		if(Overall.peaksbyday[day] < Overall.peaks[count])
+		{
+			Overall.peaksbyday[day] = Overall.peaks[count];
+		}
 	}
 	
 	day = Math.floor((Overall.peaktime *CInterval)/ (24*60)) + 1;
@@ -252,10 +257,10 @@ function calculatePeakLogins() {
 	console.log("datetime is "+day+" day, "+hours+" hours, "+mins+" mins<br/>");
 }
 
-
 // this converts login data into a csv format 
 function convertToCsv() {		
 	var csvtext = "";
+	var csvbyday = "";
 	var dt,i;
 	var time = new Date(FromDate);
 	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
@@ -263,6 +268,8 @@ function convertToCsv() {
 	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
 	csvtext = csvtext + "Date,Time,Overall";
 	csvtext = csvtext +"\r\n";
+	csvbyday = csvtext;		// use same header for both files
+	
 	var startmilli = time.getTime();
 	
 	for(var i=0; i < MaxInts; i++)
@@ -272,7 +279,14 @@ function convertToCsv() {
 		csvtext = csvtext + dt +","+Overall.peaks[i];
 		csvtext = csvtext +"\r\n";
 	}
-	io.sockets.connected[ThisSocketId].emit('doneResponse', csvtext);					
+	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
+
+	for(var i=0; i < 31; i++)
+	{
+		csvbyday = csvbyday + i+1 +","+Overall.peaksbyday[i];
+		csvbyday = csvbyday +"\r\n";
+	}
+	io.sockets.connected[ThisSocketId].emit('rep2DoneResponse', csvbyday);	
 }
 
 function initialiseGlobals() {
