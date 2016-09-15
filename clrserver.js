@@ -242,7 +242,7 @@ function calculatePeakLogins() {
 			Overall.peaklogins = Overall.peaks[count];
 			Overall.peaktime = count;
 		}
-		day = Math.floor((count*CInterval)/ (24*60)) + 1;
+		day = Math.floor((count*CInterval)/ (24*60));
 		if(Overall.peaksbyday[day] < Overall.peaks[count])
 		{
 			Overall.peaksbyday[day] = Overall.peaks[count];
@@ -266,9 +266,11 @@ function convertToCsv() {
 	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
 	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
-	csvtext = csvtext + "Date,Time,Overall";
-	csvtext = csvtext +"\r\n";
 	csvbyday = csvtext;		// use same header for both files
+	csvtext = csvtext + "Date,Time,Logins";
+	csvtext = csvtext +"\r\n";
+	csvbyday = csvtext + "Date,Logins";
+	csvbyday = csvbyday +"\r\n";
 	
 	var startmilli = time.getTime();
 	
@@ -281,9 +283,11 @@ function convertToCsv() {
 	}
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
+	var date = dt.slice(3,8);
 	for(var i=0; i < 31; i++)
 	{
-		csvbyday = csvbyday + i+1 +","+Overall.peaksbyday[i];
+		dt = i + date;
+		csvbyday = csvbyday +dt+","+Overall.peaksbyday[i];
 		csvbyday = csvbyday +"\r\n";
 	}
 	io.sockets.connected[ThisSocketId].emit('rep2DoneResponse', csvbyday);	
