@@ -116,7 +116,7 @@ function loadNext(method, next, callback) {
 			str.push(encodeURIComponent(key) + "=" + encodeURIComponent(next[key]));
 		}
 	}
-	sleep(50);		// to avoid too many requests at the same time which gives an API error
+	sleep(200);		// to avoid too many requests at the same time which gives an API error
 	getApiData(method, str.join("&"), callback);
 }
 
@@ -261,7 +261,7 @@ function calculatePeakLogins() {
 function convertToCsv() {		
 	var csvtext = "";
 	var csvbyday = "";
-	var dt;
+	var dt,tm;
 	var time = new Date(FromDate);
 	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
 	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
@@ -276,14 +276,14 @@ function convertToCsv() {
 	
 	for(var i=0; i < MaxInts; i++)
 	{
-		time = new Date(startmilli + i*CInterval*60*1000);	// convert index time to milliseconds from start
-		dt = time.toISOString().slice(0,19).replace(/T/g,",");
+		tm = new Date(startmilli + i*CInterval*60*1000);	// convert index time to milliseconds from start
+		dt = tm.toISOString().slice(0,19).replace(/T/g,",");
 		csvtext = csvtext + dt +","+Overall.peaks[i];
 		csvtext = csvtext +"\r\n";
 	}
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
-	var date = dt.slice(0,8);
+	var date = time.toISOString().slice(0,8);
 	var day;
 	for(var i=0; i < 31; i++)
 	{
