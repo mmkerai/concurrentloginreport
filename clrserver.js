@@ -50,8 +50,8 @@ var Overall;
 var totalLogins;
 var FromDate;
 var ToDate;
-var MaxInts;	// 10 or 15 min intervals in a month
-var CInterval;		// login concurrency interval i.e. 10 or 15 min intervals
+var MaxInts;	// 10,15,20,30 or 60  minute intervals in a month
+var CInterval;		// login concurrency interval i.e. 10,15,20,30 or 60  minutes
 var DeletedOperators;
 var LoggedInUsers = new Object();
 var MonthIndex = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -210,8 +210,8 @@ function saveLoginInfo(opid, starttime, endtime) {
 	// date starts at 1 but array starts from 0 so make adjustment
 	sd = sd - 1;
 	ed = ed - 1;
-	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/CInterval);		// 31 days * 24 hours * 60 min
-	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10 or 15 mins
+	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/CInterval);		// seconds = 31 days * 24 hours * 60 min
+	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10,15,20,30 or 60  minutes
 //	console.log("Logged in time "+sindex+" ,"+(eindex-sindex));
 	for(count=sindex; count <= eindex; count++)
 		(OpLogins[opid])[count] = 1;		// set operator logged in at this time to true
