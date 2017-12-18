@@ -4,6 +4,8 @@ var socket = new io.connect('https://bcloginreport.herokuapp.com', {
     'reconnectionAttempts': 50
 });
 
+var cint;
+
 function toHHMMSS(seconds) {
     var sec_num = parseInt(seconds, 10); // don't forget the second param
     var hours   = Math.floor(sec_num / 3600);
@@ -93,7 +95,7 @@ $(document).ready(function() {
 		var keyId = $('#apiKey').val();
 		var month = $('#month').val();
 		var year = $('#year').val();
-		var cint = $('#interval').val();
+		cint = $('#interval').val();
 
 		startdate = new Date();
 		startdate.setYear(year);
@@ -124,7 +126,7 @@ $(document).ready(function() {
 		console.log("User Data received "+Object.keys(data).length);
 	});
 	socket.on('loginsResponse', function(data){
-		var pdatetime = new Date(startdate.getTime() +(data.peaktime*Number(CInterval)*60*1000));	// convert index to time
+		var pdatetime = new Date(startdate.getTime() +(data.peaktime*Number(cint)*60*1000));	// convert index to time
 		console.log("Peak Login Data received "+data.peaklogins+" at "+pdatetime.toISOString());
 		var str = "";
 	
