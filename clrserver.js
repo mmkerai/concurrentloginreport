@@ -96,7 +96,7 @@ function getLoginActivity() {
 
 	var prestart = new Date(FromDate);
 	var day = prestart.getDate();
-	day = day - 2;			// collect login activity 2 days before start in case person logged in
+	day = day - 1;			// collect login activity 2 days before start in case person logged in
 	prestart.setDate(day);
 	// get all login objects using API
 	getApiData("getLoginActivity", "ServiceTypeID=1&FromDate="+prestart.toISOString()+"&ToDate="+ToDate.toISOString(), loginsCallback);

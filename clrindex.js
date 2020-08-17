@@ -138,7 +138,7 @@ $(document).ready(function() {
 //		enddate.setMonth(parseInt(month)+1,1);	// next month
 		enddate.setUTCHours(23,59,59,999);
 //		enddate = new Date(enddate.getTime() - 1);		// this gives 1 milli minus midnight
-		console.log("Start and end date: "+startdate.toDateString()+" , "+enddate.toDateString());
+		console.log("Start and end date: "+startdate.toISOString()+" , "+enddate.toISOString());
 		var loginobj = {dc: geo, aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
 		socket.emit('getLoginReport', loginobj);
 	});

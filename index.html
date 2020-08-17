@@ -15,7 +15,8 @@
 		<p class="lead">This report calculates Boldchat concurrent logins during the month (based on UTC time)</p>
 		<span class="pull-right">CLR v2.0</span>
 	</div>
-	<form id="apiform">
+	<div class="form-horizontal col-xs-9">
+		<form id="apiform">
 		<div class="form-group">
 			<label class="control-label col-xs-3" for="geo">Geo:</label>
 			<div class="col-xs-4">
@@ -25,7 +26,6 @@
 				</select>
 			</div>
 		</div>
-		<div class="form-horizontal col-xs-9">
 		<div class="form-group">
 			<label class="control-label col-xs-3" for="accountId">Account ID:</label>
 			<div class="col-xs-6">
@@ -44,34 +44,32 @@
 				<input class="form-control" type="text" name="apiKey" id="apiKey" value=""></input>
 			</div>
 		</div>
-	</div>
 	</form>
-	<div class="form-horizontal col-xs-9">
 	<form id="loginreportform">
 		<div class="form-group">
-			<label class="control-label col-xs-2">Day:</label>
-			<div class="col-xs-1">
-				<input type="number" min="0" step="1" id="day"/>
+			<label class="control-label col-xs-3">Day:</label>
+			<div class="col-xs-2">
+				<input class="form-control" type="number" min="0" step="1" id="day" value=""></input>
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="control-label col-xs-3">Month:</label>
-			<div class="col-xs-3">
-				<select class="form-control" id='month'>
-				<option value="0">January</option> 
-				<option value="1">February</option> 
-				<option value="2">March</option> 
-				<option value="3">April</option> 
-				<option value="4">May</option> 
-				<option value="5">June</option> 
-				<option value="6">July</option> 
-				<option value="7">August</option> 
-				<option value="8">September</option> 
-				<option value="9">October</option> 
-				<option value="10">November</option> 
-				<option value="11">December</option> 
-				</select>
-			</div>
+		<label class="control-label col-xs-3">Month:</label>
+		<div class="col-xs-3">
+			<select class="form-control" id='month'>
+			<option value="0">January</option> 
+			<option value="1">February</option> 
+			<option value="2">March</option> 
+			<option value="3">April</option> 
+			<option value="4">May</option> 
+			<option value="5">June</option> 
+			<option value="6">July</option> 
+			<option value="7">August</option> 
+			<option value="8">September</option> 
+			<option value="9">October</option> 
+			<option value="10">November</option> 
+			<option value="11">December</option> 
+			</select>
+		</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-xs-3">Year:</label>
@@ -102,14 +100,15 @@
 			</div>
 		</div>
 	</form>
-	
 	</div>
+	<div class="form-horizontal col-xs-12">
 	<div class="container">
 		<p class="text-center" id="error"></p>
 		<p class="text-center" id="message"></p>
 		<p class="text-center" id="result"></p>
 		<p class="text-center"><a class="btn btn-info" download="loginsbyint.csv" id="loginsbyint" href="">Download Logins by Interval</a></p>
 		<p class="text-center"><a class="btn btn-info" download="loginsbyday.csv" id="loginsbyday" href="">Download Logins by Day</a></p>
+	</div>
 	</div>
 </div>
 </body>
