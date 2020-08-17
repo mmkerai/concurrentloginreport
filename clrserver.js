@@ -62,9 +62,9 @@ function BC_API_Request(api_method,params,callBackFunction) {
 	var auth = AID + ':' + SETTINGSID + ':' + (new Date()).getTime();
 	var authHash = auth + ':' + crypto.createHash('sha512').update(auth + KEY).digest('hex');
 	if(GEO == "EU")
-		var url = "api-eu.boldchat.com/aid/";
+		var url = "api-eu.boldchat.com";
 	else // must be US DC
-		var url = "api.boldchat.com/aid/";
+		var url = "api.boldchat.com";
 
 	var options = {
 		host : url, 
