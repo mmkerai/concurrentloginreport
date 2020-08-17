@@ -28,21 +28,11 @@ app.get('/clrindex.js', function(req, res){
 app.get('/favicon.ico', function(req, res){
 	res.sendFile(__dirname + '/favicon.ico');
 });
-app.get('/jquery-2.1.3.min.js', function(req, res){
-	res.sendFile(__dirname + '/jquery-2.1.3.min.js');
-});
-app.get('/bootstrap.min.css', function(req, res){
-	res.sendFile(__dirname + '/bootstrap.min.css');
-});
 //************** Global variables
 var AID;
 var SETTINGSID;
 var KEY;
-
-var	Departments;	// array of dept ids and dept name objects
-var	Operators;		// array of operator ids and name objects
-var	DeptOperators;	// array of operators by dept id
-var	OperatorDepts;	// array of depts for each operator
+var GEO;		// US or EU data centre
 var	OpLogins;		// array of operator logins times
 var ApiDataNotReady;	// Flag to show when all Api data has been downloaded so that chat data download can begin
 var ThisSocketId;
@@ -71,8 +61,13 @@ var Plogindata = function(name) {
 function BC_API_Request(api_method,params,callBackFunction) {
 	var auth = AID + ':' + SETTINGSID + ':' + (new Date()).getTime();
 	var authHash = auth + ':' + crypto.createHash('sha512').update(auth + KEY).digest('hex');
+	if(GEO == "EU")
+		var url = "api-eu.boldchat.com/aid/";
+	else // must be US DC
+		var url = "api.boldchat.com/aid/";
+
 	var options = {
-		host : 'api.boldchat.com', 
+		host : url, 
 		port : 443, 
 		path : '/aid/'+AID+'/data/rest/json/v1/'+api_method+'?auth='+authHash+'&'+params, 
 		method : 'GET'
@@ -330,6 +325,7 @@ io.sockets.on('connection', function(socket) {
 				CInterval = Number(15);		// default is every 15 minutes
 			
 			initialiseGlobals();
+			GEO = data.dc || "US";		// US DC is default
 			AID = data.aid || 0;
 			SETTINGSID = data.settingsId || 0;
 			KEY = data.apiKey || 0;

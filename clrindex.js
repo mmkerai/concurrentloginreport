@@ -72,10 +72,32 @@ function clearCredentials() {
 	window.location.reload();
 }
 
+function checkDate(d,m,y)
+{
+	var day = parseInt(d,10);
+	var month = parseInt(m) + 1;	// add 1 as months starts from 0 but tests below doesnt
+	if(day <= 0) return false;
+	if(month <= 0 || month > 12) return false;
+
+	if((month == 4 || month == 6 || month == 9 || month == 11) && day <= 30) {
+	   return true;
+	}
+	// this will only work for this leap year
+	else if((month == 2 && day <= 28) || (y == "2020" && day <= 29)) {
+	   return true;
+	}
+	else if((month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) && day <= 31) {
+	   return true;
+	}
+
+	return false;
+}
+
 function initialiseValues() {
 	$('#error').text("");
 	$('#message').text("");
 	$('#result').text("");
+	geo = $('#geo').val() || "US";		// default to US data centre
 	$('#loginsbyint').hide();
 	$('#loginsbyday').hide();
 }
@@ -90,26 +112,34 @@ $(document).ready(function() {
 	$('#loginreportform').submit(function(event) {
 		event.preventDefault();
 		initialiseValues();
-		var accId = $('#accountId').val();
-		var apiId = $('#apiKeyId').val();
-		var keyId = $('#apiKey').val();
+		var accId = $('#accountId').val() || 0;
+		var apiId = $('#apiKeyId').val() || 0;
+		var keyId = $('#apiKey').val() || 0;
+		var geo = $('#geo').val() || "US";		// default to US data centre
+		var day = $('#day').val();
 		var month = $('#month').val();
 		var year = $('#year').val();
 		cint = $('#interval').val();
 
+		if(!checkDate(day,month,year))
+		{
+			throw new Error("Date is invalid");
+		}
+
 		startdate = new Date();
+		startdate.setDate(day);
 		startdate.setYear(year);
 		startdate.setMonth(month,1);
 		startdate.setUTCHours(0,0,0,0);
 		
 		enddate = new Date();
-		enddate.setYear(year);
-		enddate.setMonth(parseInt(month)+1,1);
-//		enddate.setMonth(month,3);			// for testing only
-		enddate.setUTCHours(0,0,0,0);
-		enddate = new Date(enddate.getTime() - 1);
+		enddate = startdate;
+//		enddate.setYear(year);
+//		enddate.setMonth(parseInt(month)+1,1);	// next month
+		enddate.setUTCHours(23,59,59,999);
+//		enddate = new Date(enddate.getTime() - 1);		// this gives 1 milli minus midnight
 		console.log("Start and end date: "+startdate.toDateString()+" , "+enddate.toDateString());
-		var loginobj = {aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
+		var loginobj = {dc: geo, aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
 		socket.emit('getLoginReport', loginobj);
 	});
 	

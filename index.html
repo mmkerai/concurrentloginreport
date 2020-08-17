@@ -13,10 +13,19 @@
 	<div class="jumbotron">
 		<h2>Concurrent Login Report</h2>
 		<p class="lead">This report calculates Boldchat concurrent logins during the month (based on UTC time)</p>
-		<span class="pull-right">CLR v1.11</span>
+		<span class="pull-right">CLR v2.0</span>
 	</div>
 	<form id="apiform">
-	<div class="form-horizontal col-xs-9">
+		<div class="form-group">
+			<label class="control-label col-xs-3" for="geo">Geo:</label>
+			<div class="col-xs-4">
+				<select class="form-control" id="geo">
+					<option value="US">US Data Centre</option>
+					<option value="EU">EU Data Centre</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-horizontal col-xs-9">
 		<div class="form-group">
 			<label class="control-label col-xs-3" for="accountId">Account ID:</label>
 			<div class="col-xs-6">
@@ -40,6 +49,12 @@
 	<div class="form-horizontal col-xs-9">
 	<form id="loginreportform">
 		<div class="form-group">
+			<label class="control-label col-xs-2">Day:</label>
+			<div class="col-xs-1">
+				<input type="number" min="0" step="1" id="day"/>
+			</div>
+		</div>
+		<div class="form-group">
 			<label class="control-label col-xs-3">Month:</label>
 			<div class="col-xs-3">
 				<select class="form-control" id='month'>
@@ -51,7 +66,7 @@
 				<option value="5">June</option> 
 				<option value="6">July</option> 
 				<option value="7">August</option> 
-				<option value="8" selected>September</option> 
+				<option value="8">September</option> 
 				<option value="9">October</option> 
 				<option value="10">November</option> 
 				<option value="11">December</option> 
@@ -62,10 +77,10 @@
 			<label class="control-label col-xs-3">Year:</label>
 			<div class="col-xs-3">
 				<select class="form-control" id='year'>
-				<option value="2015">2015</option> 
-				<option value="2016" selected>2016</option> 
-				<option value="2017">2017</option> 
-				<option value="2018">2018</option> 
+				<option value="2019">2019</option> 
+				<option value="2020" selected>2020</option> 
+				<option value="2021">2021</option> 
+				<option value="2022">2022</option> 
 				</select>
 			</div>
 		</div>
