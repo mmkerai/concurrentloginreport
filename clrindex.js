@@ -129,14 +129,15 @@ $(document).ready(function() {
 		startdate = new Date();
 		startdate.setDate(day);
 		startdate.setYear(year);
-		startdate.setMonth(month,1);
+		startdate.setMonth(month);
 		startdate.setUTCHours(0,0,0,0);
 		
 		enddate = new Date();
-		enddate = startdate;
-//		enddate.setYear(year);
-//		enddate.setMonth(parseInt(month)+1,1);	// next month
+		enddate.setDate(day);
+		enddate.setYear(year);
+		enddate.setMonth(month);
 		enddate.setUTCHours(23,59,59,999);
+//		enddate.setMonth(parseInt(month)+1,1);	// next month (previous version)
 //		enddate = new Date(enddate.getTime() - 1);		// this gives 1 milli minus midnight
 		console.log("Start and end date: "+startdate.toISOString()+" , "+enddate.toISOString());
 		var loginobj = {dc: geo, aid: accId, settingsId: apiId, apiKey: keyId, ci: cint, fd: startdate.toISOString(), td: enddate.toISOString()};
