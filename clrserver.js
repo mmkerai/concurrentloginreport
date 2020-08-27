@@ -4,7 +4,8 @@
 var http = require('http');
 var https = require('https');
 var app = require('express')();
-var fs = require('fs');
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 var crypto = require('crypto');
 var bodyParser = require('body-parser');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
@@ -14,9 +15,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 //********** Get port used by Heroku or use a default
 var PORT = Number(process.env.PORT || 3000);
-//var server = https.createServer(options, app).listen(PORT);
-var server = http.createServer(app).listen(PORT);
-var	io = require('socket.io').listen(server);
+server.listen(PORT);
+console.log("Server started on port " + PORT);
 
 //****** Callbacks for all URL requests
 app.get('/', function(req, res){
@@ -34,20 +34,18 @@ var SETTINGSID;
 var KEY;
 var GEO;		// US or EU data centre
 var	OpLogins;		// array of operator logins times
+var OpActivities;
 var ApiDataNotReady;	// Flag to show when all Api data has been downloaded so that chat data download can begin
 var ThisSocketId;
 var Overall;
-var totalLogins;
 var FromDate;
 var ToDate;
 var MaxInts;	// 10,15,20,30 or 60  minute intervals in a month
 var CInterval;		// login concurrency interval i.e. 10,15,20,30 or 60  minutes
-var DeletedOperators;
-var LoggedInUsers = new Object();
 var MonthIndex = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var SameUserLoggedIn;
 var PreStartIgnored;
 var ReportInProgress = false;
+var LoginStatus = ["Logged Out","Away","Available"];	// index for StatusType field in API response
 
 var Plogindata = function(name) {
 		this.dname = name;
@@ -55,6 +53,16 @@ var Plogindata = function(name) {
 		this.peaklogins = 0;	// peak logins based on peaks array
 		this.peaktime = 0;		// time of peak login
 		this.peaksbyday = new Array(31).fill(0);	// array of peak login per day
+};
+
+// This class saves each JSON message returned by the getLoginActivity API call
+var loginActivity = function(activity) {
+	this.oid = activity.OperatorID;
+	this.name = activity.Name;
+	this.previousStatus = LoginStatus[activity.OriginalStatusType];	// 0 - logged out, 1 - away, 2 available
+	this.newStatus = LoginStatus[activity.StatusType];
+	this.created = activity.Created;
+	this.ended = activity.Ended;
 };
 
 // Set up code for outbound BoldChat API calls.  All of the capture callback code should ideally be packaged as an object.
@@ -86,7 +94,6 @@ function sleep(milliseconds) {
 
 // set up operator depts from department operators for easier indexing
 function getLoginActivity() {
-	var ops, depts;
 	if(ApiDataNotReady > 0)
 	{
 		console.log("Waiting for static data: "+ApiDataNotReady);
@@ -96,7 +103,7 @@ function getLoginActivity() {
 
 	var prestart = new Date(FromDate);
 	var day = prestart.getDate();
-	day = day - 1;			// collect login activity 2 days before start in case person logged in
+	day = day - 1;			// collect login activity 1 days before start in case person logged in
 	prestart.setDate(day);
 	// get all login objects using API
 	getApiData("getLoginActivity", "ServiceTypeID=1&FromDate="+prestart.toISOString()+"&ToDate="+ToDate.toISOString(), loginsCallback);
@@ -111,7 +118,7 @@ function loadNext(method, next, callback) {
 			str.push(encodeURIComponent(key) + "=" + encodeURIComponent(next[key]));
 		}
 	}
-	sleep(200);		// to avoid too many requests at the same time which gives an API error
+	sleep(500);		// to avoid too many requests at the same time which gives an API error
 	getApiData(method, str.join("&"), callback);
 }
 
@@ -132,7 +139,7 @@ function getApiData(method, params, fcallback,cbparam) {
 				jsonObj = JSON.parse(str);
 			}
 			catch (e){
-				console.log("API or JSON message error");
+				console.log("API or JSON message error: "+str);
 				return;
 			}
 			var next = jsonObj.Next;
@@ -167,7 +174,7 @@ function loginsCallback(dlist) {
 	{
 
 		if(dlist[i].Ended == null)		// user must still be logged in
-			ended = new Date();
+			ended = new Date();			// so set datetime to now
 		else
 			ended = new Date(dlist[i].Ended);
 		
@@ -176,7 +183,7 @@ function loginsCallback(dlist) {
 			PreStartIgnored++;
 			continue;
 		}
-				
+		OpActivities.push(new loginActivity(dlist[i]));		// save the activity for export later
 		created = new Date(dlist[i].Created);
 		if(created < FromDate)			// if user logged in before start
 			created = FromDate;
@@ -192,7 +199,7 @@ function loginsCallback(dlist) {
 	io.sockets.connected[ThisSocketId].emit('messageResponse', "Login info processed: "+TotalLogins);		
 }
 
-// save login time span 
+/* // save login time span based on monthly stats (not used now)
 function saveLoginInfo(opid, starttime, endtime) {
 	var sd,sh,sm,ed,eh,em,sindex,eindex,count;
 			
@@ -207,6 +214,22 @@ function saveLoginInfo(opid, starttime, endtime) {
 	ed = ed - 1;
 	sindex = Math.floor(((sd*60*24)+(sh*60)+sm)/CInterval);		// seconds = 31 days * 24 hours * 60 min
 	eindex = Math.floor(((ed*60*24)+(eh*60)+em)/CInterval);		// every 10,15,20,30 or 60  minutes
+//	console.log("Logged in time "+sindex+" ,"+(eindex-sindex));
+	for(count=sindex; count <= eindex; count++)
+		(OpLogins[opid])[count] = 1;		// set operator logged in at this time to true
+} */
+
+// save login time span based on daily stats (update Aug 2020)
+function saveLoginInfo(opid, starttime, endtime) {
+	var sd,sh,sm,ed,eh,em,sindex,eindex,count;
+
+	sh = starttime.getHours();
+	sm = starttime.getMinutes();
+	eh = endtime.getHours();
+	em = endtime.getMinutes();
+
+	sindex = Math.floor(((sh*60)+sm)/CInterval);		// minutes = hours * 60 min
+	eindex = Math.floor(((eh*60)+em)/CInterval);		// every 10,15,20,30 or 60  minutes
 //	console.log("Logged in time "+sindex+" ,"+(eindex-sindex));
 	for(count=sindex; count <= eindex; count++)
 		(OpLogins[opid])[count] = 1;		// set operator logged in at this time to true
@@ -227,7 +250,7 @@ function calculateConcLogins() {
 	}
 }
 
-// calculate peak logins by checking everybody logged in each minutes interval of the day 
+/* // calculate peak logins by checking everybody logged in each minutes interval of the day 
 function calculatePeakLogins() {
 	var count, day, partday, hours, mins;
 	for(count=0; count < MaxInts; count++)
@@ -250,6 +273,26 @@ function calculatePeakLogins() {
 	mins = partday % 60;
 	console.log("Peak value by interval is "+Overall.peaklogins+" at "+Overall.peaktime+"<br/>");
 	console.log("datetime is "+day+" day, "+hours+" hours, "+mins+" mins<br/>");
+}
+ */
+// calculate peak logins by checking everybody logged in each minute interval for one day 
+function calculatePeakLogins() {
+	var count, hours, mins;
+	for(count=0; count < MaxInts; count++)
+	{
+		if(Overall.peaklogins < Overall.peaks[count])
+		{
+			Overall.peaklogins = Overall.peaks[count];
+			Overall.peaktime = count;
+		}
+	}
+	
+	hours = Math.floor(Overall.peaktime*CInterval/ 60);
+	mins = Overall.peaktime*CInterval % 60;
+	// convert peaktime from interval to proper date
+	Overall.peaktime = new Date(FromDate.getTime() + (Overall.peaktime * CInterval * 60 * 1000));
+	console.log("Peak value by interval is "+Overall.peaklogins+" at "+Overall.peaktime);
+	console.log("Time is "+hours+" hours, "+mins+" mins");
 }
 
 // this converts login data into a csv format 
@@ -278,7 +321,8 @@ function convertToCsv() {
 	}
 	io.sockets.connected[ThisSocketId].emit('rep1DoneResponse', csvtext);	
 
-	var date = time.toISOString().slice(0,8);
+	// This is for monthly so not required
+/* 	var date = time.toISOString().slice(0,8);
 	var day;
 	for(var i=0; i < 31; i++)
 	{
@@ -287,12 +331,33 @@ function convertToCsv() {
 		csvbyday = csvbyday +dt+","+Overall.peaksbyday[i];
 		csvbyday = csvbyday +"\r\n";
 	}
-	io.sockets.connected[ThisSocketId].emit('rep2DoneResponse', csvbyday);	
+	io.sockets.connected[ThisSocketId].emit('rep2DoneResponse', csvbyday); */	
+}
+
+// Added Aug 2020
+// this exports raw login activity into a csv format 
+function exportToCsv() {		
+	var logs = "Login Activty from " + FromDate + " to " + ToDate;
+	logs = logs + "\r\n" + "Operator ID,Operator Name,Previous Status,New Status,Created,Ended";
+	for(var i in OpActivities)
+	{
+		logs = logs + "\r\n" + OpActivities[i].oid + "," +
+							OpActivities[i].oid + "," +
+							OpActivities[i].name + "," +
+							OpActivities[i].previousStatus + "," +
+							OpActivities[i].newStatus + "," +
+							OpActivities[i].created + "," +
+							OpActivities[i].ended;
+	}
+	
+	io.sockets.connected[ThisSocketId].emit('rep3DoneResponse', logs);	
 }
 
 function initialiseGlobals() {
 	OpLogins = new Object();
-	MaxInts = 31*24*(60/CInterval);		// max intervals in a month 31 days * 24 hours * 4 or 6 per hour
+	OpActivities = new Array();
+//	MaxInts = 31*24*(60/CInterval);		// max intervals in a month 31 days * 24 hours * 4 or 6 per hour
+	MaxInts = 24*(60/CInterval);		// max intervals in a day * 24 hours * 4 or 6 per hour
 	ApiDataNotReady = 0;
 	TotalLogins = 0;
 	Overall = new Plogindata("Overall");
@@ -302,7 +367,7 @@ function initialiseGlobals() {
 }
 
 // Set up callbacks
-io.sockets.on('connection', function(socket) {
+io.on('connection', function(socket) {
 	//  Get all reports and returned data
 	socket.on('getLoginReport', function(data)
 	{	
@@ -336,7 +401,9 @@ io.sockets.on('connection', function(socket) {
 			}
 			FromDate = new Date(data.fd);
 			ToDate = new Date(data.td);
-			socket.emit('errorResponse', "Calculating concurrent logins based on "+CInterval+" min intervals from "+FromDate.toGMTString()+" to "+ToDate.toGMTString());
+			var str = "Calculating concurrent logins based on "+CInterval+" min intervals from "+FromDate.toGMTString()+" to "+ToDate.toGMTString();
+			socket.emit('errorResponse', str);
+			console.log(str);
 			ReportInProgress = true;
 			ThisSocketId = socket.id;
 			getLoginActivity();		// login activity for time period
@@ -367,8 +434,7 @@ function waitForLoginData() {
 	console.log("Prestart ignored is "+PreStartIgnored);
 	
 	io.sockets.connected[ThisSocketId].emit('loginsResponse', Overall);					
-	convertToCsv();
+	convertToCsv();		// Concurrent login report
+	exportToCsv();		// Login activity report
 	ReportInProgress = false;		// reset for next user
 }
-
-console.log("Server started successfully");

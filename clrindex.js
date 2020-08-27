@@ -99,12 +99,12 @@ function initialiseValues() {
 	$('#result').text("");
 	geo = $('#geo').val() || "US";		// default to US data centre
 	$('#loginsbyint').hide();
-	$('#loginsbyday').hide();
+	$('#loginactivity').hide();
 }
 
 $(document).ready(function() {
 	var csvfile1 = null;
-	var csvfile2 = null;
+	var csvfile3 = null;
 	var enddate, startdate;
 	
 	initialiseValues();
@@ -123,7 +123,8 @@ $(document).ready(function() {
 
 		if(!checkDate(day,month,year))
 		{
-			throw new Error("Date is invalid");
+			$("#error").text("Date is invalid");
+			return;
 		}
 
 		startdate = new Date();
@@ -157,8 +158,9 @@ $(document).ready(function() {
 		console.log("User Data received "+Object.keys(data).length);
 	});
 	socket.on('loginsResponse', function(data){
-		var pdatetime = new Date(startdate.getTime() +(data.peaktime*Number(cint)*60*1000));	// convert index to time
-		console.log("Peak Login Data received "+data.peaklogins+" at "+pdatetime.toISOString());
+		console.log("peaktime: "+data.peaktime);
+		var pdatetime = new Date(data.peaktime);
+		console.log("Peak Login Data: "+data.peaklogins+" at "+pdatetime.toISOString());
 		var str = "";
 	
 		str = "Peak logins: "+data.peaklogins+" on "+pdatetime.toUTCString();
@@ -179,7 +181,8 @@ $(document).ready(function() {
 		$('#loginsbyint').show(200);
 	});
 
-	socket.on('rep2DoneResponse', function(data){
+// Login by day no longer used
+/* 	socket.on('rep2DoneResponse', function(data){
 		$("#done").text("Creating csv files");
 		var filedata2 = new Blob([data], {type: 'text/plain'});
 		// If we are replacing a previously generated file we need to
@@ -191,6 +194,20 @@ $(document).ready(function() {
 		csvfile2 = window.URL.createObjectURL(filedata2);
 		$('#loginsbyday').attr('href', csvfile2);
 		$('#loginsbyday').show(400);
+	}); */
+
+	socket.on('rep3DoneResponse', function(data){
+		$("#done").text("Creating csv files");
+		var filedata3 = new Blob([data], {type: 'text/plain'});
+		// If we are replacing a previously generated file we need to
+		// manually revoke the object URL to avoid memory leaks.
+		if (csvfile3 !== null)
+		{
+			window.URL.revokeObjectURL(csvfile3);
+		}
+		csvfile3 = window.URL.createObjectURL(filedata3);
+		$('#loginactivity').attr('href', csvfile3);
+		$('#loginactivity').show(400);
 	});
 
 	socket.on('connect_timeout', function(data){
