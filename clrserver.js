@@ -301,9 +301,8 @@ function convertToCsv() {
 	var csvbyday = "";
 	var dt,tm;
 	var time = new Date(FromDate);
-	var pt = new Date(time.getTime() +(Overall.peaktime*CInterval*60*1000));
-	csvtext = "Login report for "+MonthIndex[time.getMonth()]+" "+time.getFullYear()+"\r\n";
-	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+pt.toUTCString()+"\r\n";
+	csvtext = "Login report for "+FromDate.getDate() +" "+ MonthIndex[FromDate.getMonth()]+" "+FromDate.getFullYear()+"\r\n";
+	csvtext = csvtext + "Peak Logins: "+Overall.peaklogins+",at: "+Overall.peaktime+"\r\n";
 	csvbyday = csvtext;		// use same header for both files
 	csvtext = csvtext + "Date,Time,Peak Logins";
 	csvtext = csvtext +"\r\n";
@@ -341,8 +340,7 @@ function exportToCsv() {
 	logs = logs + "\r\n" + "Operator ID,Operator Name,Previous Status,New Status,Created,Ended";
 	for(var i in OpActivities)
 	{
-		logs = logs + "\r\n" + OpActivities[i].oid + "," +
-							OpActivities[i].oid + "," +
+		logs = logs + "\r\n" + "\"=\"\"" + OpActivities[i].oid + "\"\"\"," +
 							OpActivities[i].name + "," +
 							OpActivities[i].previousStatus + "," +
 							OpActivities[i].newStatus + "," +

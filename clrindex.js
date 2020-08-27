@@ -158,12 +158,10 @@ $(document).ready(function() {
 		console.log("User Data received "+Object.keys(data).length);
 	});
 	socket.on('loginsResponse', function(data){
-		console.log("peaktime: "+data.peaktime);
-		var pdatetime = new Date(data.peaktime);
-		console.log("Peak Login Data: "+data.peaklogins+" at "+pdatetime.toISOString());
+		console.log("Peak Login Data: "+data.peaklogins+" at "+data.peaktime);
 		var str = "";
 	
-		str = "Peak logins: "+data.peaklogins+" on "+pdatetime.toUTCString();
+		str = "Peak logins: "+data.peaklogins+" on "+ new Date(data.peaktime).toUTCString();
 		$("#result").html(str);
 	});
 	
